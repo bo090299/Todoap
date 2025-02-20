@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:get/get.dart';
 
 class Home_page extends StatefulWidget {
   const Home_page({super.key});
@@ -10,6 +11,7 @@ class Home_page extends StatefulWidget {
 
 class __Home_pageState extends State<Home_page> {
   final _mybox = Hive.box('mybox');
+  int index1 = 0;
   TextEditingController controller = TextEditingController();
 
   void update_task(int index) {
@@ -41,7 +43,7 @@ class __Home_pageState extends State<Home_page> {
                     onPressed: () {
                       setState(() {
                         _mybox.putAt(index, controller.text);
-                        controller.clear();
+                        Navigator.pop(context);
                       });
                     },
                     child: Icon(Icons.update),
@@ -116,6 +118,42 @@ class __Home_pageState extends State<Home_page> {
     );
   }
 
+  void getdialog(){
+    Get.dialog(
+      AlertDialog(
+        title: Text('Are you sure?'),
+        content: Text('''Do you realy want to delete 
+        your information? You will not be
+        able to undo this action'''),
+        actions: [
+          Container(
+       
+            decoration: BoxDecoration(  
+              border: Border.all(color: Colors.blue,width: 3),
+              borderRadius: BorderRadius.all(Radius.circular(15))
+            ),
+            child: ElevatedButton(onPressed: (){
+              Navigator.pop(context);
+            }, child: Text('No',
+            style: TextStyle(fontWeight:FontWeight.bold,color: Colors.blue),)),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.blue,width: 3),
+              borderRadius: BorderRadius.all(Radius.circular(15))
+            ),
+            child:ElevatedButton(onPressed: (){
+              setState(() {
+                    _mybox.deleteAt(index1);
+                    Navigator.pop(context);
+                  });
+            }, 
+            child: Text('Yes',style: TextStyle(fontWeight:FontWeight.bold,color: Colors.blue))),
+          )
+        ],
+      )
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,29 +164,37 @@ class __Home_pageState extends State<Home_page> {
       ),
       body: ListView.builder(
         itemCount: _mybox.length,
-        itemBuilder: (context, index) => ListTile(
-          title: Text(_mybox.values.toList()[index]),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min, 
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                 update_task(index);
-                },
-                child: Icon(Icons.update_disabled),
-              ),
-              SizedBox(
-                width: 15,
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _mybox.deleteAt(index);
+        itemBuilder: (context, index) => Container(
+          decoration: BoxDecoration(
+            color: Colors.amber,
+            border: Border.all(color: Colors.yellow,width: 2),
+            borderRadius: BorderRadius.all(Radius.circular(15))
+          ),
+          child: ListTile(
+            title: Text(_mybox.values.toList()[index]),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min, 
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                   update_task(index);
+                  },
+                  child: Icon(Icons.update_disabled),
+                ),
+                SizedBox(
+                  width: 15,
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                    index1 = index;
+                    getdialog();
                   });
-                },
-                child: Icon(Icons.delete),
-              ),
-            ],
+                  },
+                  child: Icon(Icons.delete),
+                ),
+              ],
+            ),
           ),
         ),
       ),
