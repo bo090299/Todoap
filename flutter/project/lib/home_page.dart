@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:hive/hive.dart';
 import 'package:get/get.dart';
 
@@ -12,6 +13,8 @@ class Home_page extends StatefulWidget {
 class __Home_pageState extends State<Home_page> {
   final _mybox = Hive.box('mybox');
   int index1 = 0;
+  
+  bool islendi = true;
   TextEditingController controller = TextEditingController();
 
   void update_task(int index) {
@@ -28,6 +31,7 @@ class __Home_pageState extends State<Home_page> {
               TextField(
                 controller: controller,
                 decoration: InputDecoration(
+                  labelText: _mybox.values.toList()[index]['text'],
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(),
@@ -42,8 +46,15 @@ class __Home_pageState extends State<Home_page> {
                   ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        _mybox.putAt(index, controller.text);
-                        Navigator.pop(context);
+                        if(controller.text.trim().isEmpty){
+                          setState(() {
+                            Bosluk();
+                          });
+                        }else{
+                        _mybox.putAt(index, {
+                          'text' :controller.text,
+                          'done': false});
+                        Navigator.pop(context);}
                       });
                     },
                     child: Icon(Icons.update),
@@ -65,7 +76,27 @@ class __Home_pageState extends State<Home_page> {
       ),
     );
   }
-
+  void Bosluk (){
+    Get.dialog(
+      AlertDialog(
+        title: Text('Yalnyslyk?'),
+        content: Text('Boslugy dolduryn!'),
+        actions: [
+          Container(
+       
+            decoration: BoxDecoration(  
+              border: Border.all(color: Colors.blue,width: 3),
+              borderRadius: BorderRadius.all(Radius.circular(15))
+            ),
+            child: ElevatedButton(onPressed: (){
+              Navigator.pop(context);
+            }, child: Text('Ok',
+            style: TextStyle(fontWeight:FontWeight.bold,color: Colors.blue),)),
+          ),
+        ],
+      )
+    );
+  }
   void new_task() {
     showDialog(
       context: context,
@@ -94,8 +125,17 @@ class __Home_pageState extends State<Home_page> {
                   ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        _mybox.add(controller.text);
+                        if(controller.text.trim().isEmpty){
+                          setState(() {
+                            Bosluk();
+                          });
+                        }else{
+                        _mybox.add({
+                          'text':controller.text,
+                          'done':false
+                        });
                         controller.clear();
+                        }
                       });
                     },
                     child: Icon(Icons.insert_drive_file_rounded),
@@ -117,7 +157,7 @@ class __Home_pageState extends State<Home_page> {
       ),
     );
   }
-
+@override
   void getdialog(){
     Get.dialog(
       AlertDialog(
@@ -171,7 +211,49 @@ class __Home_pageState extends State<Home_page> {
             borderRadius: BorderRadius.all(Radius.circular(15))
           ),
           child: ListTile(
-            title: Text(_mybox.values.toList()[index]),
+            onTap: () {
+              Get.bottomSheet(
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color:const Color.fromARGB(255, 177, 185, 155),width: 4),),
+                      child: Image.network('https://t4.ftcdn.net/jpg/01/05/90/77/360_F_105907729_4RzHYsHJ2UFt5koUI19fc6VzyFPEjeXe.jpg'),
+                    ),
+
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(_mybox.values.toList()[index]['text'],style: TextStyle(fontSize: 20,fontWeight:FontWeight.bold,),),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Text('''            Before serving, consider offering the
+        customer some recommended additions'''),
+                        SizedBox(height: 5,),
+                        ElevatedButton(onPressed: (){
+                            setState(() {
+                              _mybox.values.toList()[index]['done'] = true;
+                              Navigator.pop(context);
+                            });
+                        }, child: Text('Active',style:TextStyle(fontSize:20 ,color: Colors.blue,fontWeight: FontWeight.bold),)),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        ElevatedButton(onPressed: (){
+                          setState(() {
+                            _mybox.values.toList()[index]['done'] = false;
+                            Navigator.pop(context);
+                          });
+                        }, child:Text('Disactive',style:TextStyle(fontSize:20 ,color: Colors.blue,fontWeight: FontWeight.bold),))
+                      ],
+                    )
+                  ],
+                )
+              );
+            },
+            title: Text(_mybox.values.toList()[index]['text'],style: TextStyle(decoration:_mybox.values.toList()[index]['done']? TextDecoration.lineThrough:null),),
             trailing: Row(
               mainAxisSize: MainAxisSize.min, 
               children: [
