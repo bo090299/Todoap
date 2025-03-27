@@ -1,7 +1,9 @@
+
 import 'package:flutter/material.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:hive/hive.dart';
 import 'package:get/get.dart';
+import 'package:project/change_theme.dart';
 
 class Home_page extends StatefulWidget {
   const Home_page({super.key});
@@ -11,6 +13,8 @@ class Home_page extends StatefulWidget {
 }
 
 class __Home_pageState extends State<Home_page> {
+   final themeController = Get.find<ThemeController>();
+
   final _mybox = Hive.box('mybox');
   int index1 = 0;
 
@@ -266,20 +270,14 @@ class __Home_pageState extends State<Home_page> {
     ));
   }
 List data = [];
-void getdata(){
-  data =_mybox.values.toList();
-  for (var i in data) {
-    if (islendi == true) {
-      if (i['done']==true) {
-     data.add(i); 
-    }
-    }
+  void getdata() {
+    List allData = _mybox.values.toList();
+    setState(() {
+      data = allData.where((item) => item['done'] == islendi).toList();
+    });
   }
-   islendi = !islendi;
-  setState(() {
-    
-  });
-}
+
+
 @override
   void initState() {
     // TODO: implement initState
@@ -296,10 +294,8 @@ void getdata(){
           Checkbox(
               value: islendi,
               onChanged: (bool? newValue) {
-                
+                islendi=newValue!;
                  
-                
-             
              getdata(); })
         ],
         backgroundColor: Colors.blue,
@@ -351,11 +347,31 @@ void getdata(){
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          new_task();
-        },
-        child: Icon(Icons.plus_one),
+      floatingActionButton: Row(
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              new_task();
+            },
+            child: Row(
+              children: [
+                Icon(Icons.plus_one)
+              ],
+            ),
+          ),
+          Obx(() => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Dark Mode"),
+                    Switch(
+                      value: themeController.isDarkMode.value,
+                      onChanged: (value) {
+                        themeController.toggleTheme(value);
+                      },
+                    ),
+                  ],
+                )),
+        ],
       ),
     );
   }
